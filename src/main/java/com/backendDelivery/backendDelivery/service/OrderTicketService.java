@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class OrderTicketService {
@@ -41,14 +42,19 @@ public class OrderTicketService {
             long minutesDelay = duration.toMinutes();
             generatePriority = generatePriority + (int)minutesDelay;
 
-//            log.info(String.valueOf(generatePriority));
-            OrderTickets orderTicket = new OrderTickets();
-            orderTicket.setOrderId(order.getId());
-            orderTicket.setPriority(generatePriority);
-            orderTicket.setCustomerUsername(order.getCustomerUsername());
-            orderTicket.setTimeToReachDestination(order.getTimeToReachDestination());
+            Optional<OrderTickets> findOrderTicket = Optional.ofNullable(orderTicketRepository.findByorderId(order.getId()));
+            if(findOrderTicket.isPresent()){
+                findOrderTicket.get().setPriority(generatePriority);
+                orderTicketRepository.save(findOrderTicket.get());
+            }else{
+                OrderTickets orderTicket = new OrderTickets();
+                orderTicket.setOrderId(order.getId());
+                orderTicket.setPriority(generatePriority);
+                orderTicket.setCustomerUsername(order.getCustomerUsername());
+                orderTicket.setTimeToReachDestination(order.getTimeToReachDestination());
 
-            orderTicketRepository.save(orderTicket);
+                orderTicketRepository.save(orderTicket);
+            }
         });
     }
 
